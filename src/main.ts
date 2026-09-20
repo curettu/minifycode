@@ -1,11 +1,19 @@
 export type CodeMode = "html" | "css" | "js";
 
-const compactCss = (source: string): string => source
-  .replace(/\/\*[\s\S]*?\*\//g, "")
-  .replace(/\s+/g, " ")
-  .replace(/\s*([{}:;,>+~])\s*/g, "$1")
-  .replace(/;}/g, "}")
-  .trim();
+const compactCss = (source: string): string => {
+  const strings: string[] = [];
+  const protectedSource = source.replace(/(["'])(?:\\.|(?!\1)[\s\S])*\1/g, (value) => {
+    strings.push(value);
+    return `___MINIFYCODE_STRING_${strings.length - 1}___`;
+  });
+  const compacted = protectedSource
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\s+/g, " ")
+    .replace(/\s*([{}:;,>+~])\s*/g, "$1")
+    .replace(/;}/g, "}")
+    .trim();
+  return compacted.replace(/___MINIFYCODE_STRING_(\d+)___/g, (_, index: string) => strings[Number(index)]);
+};
 
 const mangleLocals = (source: string): string => {
   const names = new Set<string>();
@@ -79,26 +87,48 @@ const mangleLocals = (source: string): string => {
 const compactJavaScript = (source: string): string => {
   let output = "";
   let quote = "";
+  let comment = "";
   let pendingSpace = false;
   for (let index = 0; index < source.length; index += 1) {
     const character = source[index];
+    const next = source[index + 1] ?? "";
+    if (comment === "line") {
+      if (character === "\n") comment = "";
+      continue;
+    }
+    if (comment === "block") {
+      if (character === "*" && next === "/") { comment = ""; index += 1; }
+      continue;
+    }
     if (quote) {
       output += character;
       if (character === "\\") output += source[++index] ?? "";
       else if (character === quote) quote = "";
       continue;
     }
+    if (character === "/" && next === "/") { comment = "line"; index += 1; continue; }
+    if (character === "/" && next === "*") { comment = "block"; index += 1; continue; }
     if (["'", '"', "`"].includes(character)) quote = character;
     if (/\s/.test(character)) { pendingSpace = true; continue; }
     if (pendingSpace && /[\w$]/.test(output.charAt(output.length - 1)) && /[\w$]/.test(character)) output += " ";
     pendingSpace = false;
     output += character;
   }
-  return mangleLocals(output.trim());
+  return mangleLocals(output.trim()).replace(/;(?=})/g, "");
 };
 
 export const minifyCode = (source: string, mode: CodeMode): string => {
   if (mode === "css") return compactCss(source);
   if (mode === "js") return compactJavaScript(source);
-  return source.replace(/<!--[\s\S]*?-->/g, "").replace(/>\s+</g, "><").replace(/\s+/g, " ").trim();
+  const blocks: string[] = [];
+  const protectedSource = source.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, (block) => {
+    blocks.push(block);
+    return `___MINIFYCODE_BLOCK_${blocks.length - 1}___`;
+  });
+  const compacted = protectedSource.replace(/<!--[\s\S]*?-->/g, "").replace(/>\s+</g, "><").replace(/\s+/g, " ").trim();
+  return compacted.replace(/___MINIFYCODE_BLOCK_(\d+)___/g, (_, index: string) => {
+    const block = blocks[Number(index)];
+    return block.replace(/(<script[^>]*>)([\s\S]*?)(<\/script>)/i, (_, open: string, content: string, close: string) => `${open}${compactJavaScript(content)}${close}`)
+      .replace(/(<style[^>]*>)([\s\S]*?)(<\/style>)/i, (_, open: string, content: string, close: string) => `${open}${compactCss(content)}${close}`);
+  });
 };
