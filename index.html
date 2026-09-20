@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="description" content="MinifyCode - локальная минификация HTML, CSS и JavaScript." />
+		<title>MinifyCode — compact code, clear output</title>
+		<link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+		<link rel="stylesheet" href="src/styles.css" />
+	</head>
+	<body>
+		<div class="app-shell">
+			<header class="topbar">
+				<a class="brand" href="./" aria-label="MinifyCode, на главную">
+					<span class="brand-mark" aria-hidden="true">{ }</span>
+					<span>Minify<span>Code</span></span>
+				</a>
+				<div class="topbar-note"><span class="status-dot"></span> работает локально</div>
+			</header>
+
+			<main>
+				<section class="hero" aria-labelledby="page-title">
+					<div class="eyebrow">CODE / REDUCE / SHIP</div>
+					<h1 id="page-title">Меньше кода.<br /><em>Больше скорости.</em></h1>
+					<p>Чистая минификация HTML, CSS и JavaScript прямо в браузере. Ваш код никуда не отправляется.</p>
+				</section>
+
+				<section class="workspace" aria-label="Рабочая область минификации">
+					<div class="toolbar">
+						<div class="mode-switch" role="tablist" aria-label="Тип кода">
+							<button class="mode-button is-active" data-mode="html" role="tab" aria-selected="true">HTML</button>
+							<button class="mode-button" data-mode="css" role="tab" aria-selected="false">CSS</button>
+							<button class="mode-button" data-mode="js" role="tab" aria-selected="false">JS</button>
+						</div>
+						<div class="toolbar-actions">
+							<button class="quiet-button" id="clear-button" type="button">Очистить</button>
+							<button class="primary-button" id="minify-button" type="button"><span>Минифицировать</span><kbd>⌘ ↵</kbd></button>
+						</div>
+					</div>
+
+					<div class="editor-grid">
+						<article class="editor-panel input-panel">
+							<div class="panel-heading">
+								<div><span class="panel-index">01</span><h2>Исходный код</h2></div>
+								<span class="language-chip" id="input-language">HTML</span>
+							</div>
+							<div class="textarea-wrap">
+								<textarea id="source-code" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="Вставьте HTML-код сюда..." aria-label="Исходный код"></textarea>
+								<div class="drop-hint" id="drop-hint"><span class="drop-icon">↳</span><span>Перетащите файл или вставьте код</span></div>
+							</div>
+							<div class="panel-footer"><span id="input-meta">0 строк · 0 символов</span><button class="text-button" id="sample-button" type="button">Загрузить пример <span>↗</span></button></div>
+						</article>
+
+						<div class="transfer-mark" aria-hidden="true">→</div>
+
+						<article class="editor-panel output-panel">
+							<div class="panel-heading">
+								<div><span class="panel-index">02</span><h2>Результат</h2></div>
+								<span class="language-chip result-chip" id="output-language">MINIFIED</span>
+							</div>
+							<div class="textarea-wrap output-wrap"><textarea id="minified-code" spellcheck="false" readonly placeholder="Здесь появится минифицированный код..." aria-label="Минифицированный код"></textarea><div class="output-empty" id="output-empty"><span class="spark">✦</span><span>Ваш результат появится здесь</span></div></div>
+							<div class="panel-footer"><span id="output-meta">0 символов</span><button class="text-button" id="copy-button" type="button" disabled>Скопировать <span>↗</span></button></div>
+						</article>
+					</div>
+
+					<div class="stats-bar" aria-live="polite">
+						<div class="stat"><span class="stat-label">Уменьшено на</span><strong id="saved-percent">—</strong></div>
+						<div class="stat"><span class="stat-label">Символов убрано</span><strong id="saved-chars">—</strong></div>
+						<div class="stat stat-action"><button class="download-button" id="download-button" type="button" disabled><span>↓</span> Скачать файл</button></div>
+					</div>
+				</section>
+			</main>
+
+			<footer class="site-footer"><span>MinifyCode © 2026</span><span>HTML · CSS · JS <i></i> zero uploads</span></footer>
+		</div>
+    <!--<script src="src/main.ts"></script>-->
+		<script src="src/main.js"></script>
+	</body>
+</html>
